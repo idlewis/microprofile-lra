@@ -147,7 +147,4 @@ public class LraTckConfigBean {
         return useRecoveryHeader;
     }
 
-    public String tckSuiteBaseUrl() {
-        return tckSuiteBaseUrl;
-    }
 }

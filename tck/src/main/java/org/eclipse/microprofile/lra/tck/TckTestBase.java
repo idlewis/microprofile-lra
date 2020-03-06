@@ -24,6 +24,7 @@ import org.eclipse.microprofile.lra.tck.participant.activity.Activity;
 import org.eclipse.microprofile.lra.tck.participant.api.LraResource;
 import org.eclipse.microprofile.lra.tck.participant.api.Util;
 import org.eclipse.microprofile.lra.tck.service.LRAMetricService;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -39,7 +40,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.logging.Logger;
@@ -59,7 +59,10 @@ public class TckTestBase {
     private LraTckConfigBean config;
 
     @Inject
-    private LRAMetricService lraMetricService;    
+    private LRAMetricService lraMetricService;
+    
+    @ArquillianResource
+    URL deploymentURL;
 
     LRAClientOps lraClient;
 
@@ -91,12 +94,13 @@ public class TckTestBase {
         tckSuiteClient = ClientBuilder.newClient();
         lraMetricService.clear();
 
-        try {
-            tckSuiteTarget = tckSuiteClient.target(URI.create(new URL(config.tckSuiteBaseUrl()).toExternalForm()));
-            lraClient = new LRAClientOps(tckSuiteTarget);
-        } catch (MalformedURLException mfe) {
-            throw new IllegalStateException("Cannot create URL for the LRA TCK suite base url " + config.tckSuiteBaseUrl(), mfe);
-        }
+        tckSuiteTarget = tckSuiteClient.target(URI.create(deploymentURL.toExternalForm()));
+        lraClient = new LRAClientOps(tckSuiteTarget);
+
+    }
+    
+    public WebTarget getTarget(URL deploymentURL) {
+        return tckSuiteClient.target(URI.create(deploymentURL.toExternalForm()));
     }
 
     void checkStatusAndCloseResponse(Response.Status expectedStatus, Response response, WebTarget resourcePath) {
